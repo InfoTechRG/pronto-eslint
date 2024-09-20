@@ -27,9 +27,18 @@ module Pronto
         include_context 'test repo'
         include_context 'eslint.config.js error'
 
+        before do
+          allow(eslint.logger).to receive(:log).and_call_original
+        end
+
         let(:patches) { repo.diff('main') }
 
-        its(:'first.msg') { should == 'Parsing error: Invalid ecmaVersion.' }
+        its(:first) { is_expected.to be_nil }
+
+        it 'logs a fatal error' do
+          run
+          expect(eslint.logger).to have_received(:log).with('ESLint Error: Parsing error: Invalid ecmaVersion.')
+        end
       end
 
       context 'with patches including warnings' do

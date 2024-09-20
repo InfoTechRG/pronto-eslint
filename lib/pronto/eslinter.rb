@@ -15,6 +15,7 @@ module Pronto
         .select { |patch| patch.additions.positive? }
         .flat_map { |patch| process_patch(patch) }
         .compact
+        .filter_map { |message| message if message.line }
     end
 
     def process_patch(patch)
@@ -34,6 +35,10 @@ module Pronto
 
     def eslint_config
       @eslint_config ||= Pronto::ConfigFile.new.to_h['eslinter'] || {}
+    end
+
+    def logger
+      @logger ||= Pronto::Config.new.logger
     end
   end
 end

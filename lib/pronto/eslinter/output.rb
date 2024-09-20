@@ -10,6 +10,7 @@ module Pronto
       attr_reader :data, :patch, :eslinter
 
       def_delegator :eslinter, :eslint_config
+      def_delegator :eslinter, :logger
 
       def initialize(data, patch, eslinter)
         @data = data.first
@@ -22,7 +23,7 @@ module Pronto
       end
 
       def messages
-        @messages ||= @data[:messages].map do |message|
+        @messages ||= @data[:messages].filter_map do |message|
           Offense.new(message, self).message
         end
       end

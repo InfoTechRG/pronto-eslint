@@ -21,7 +21,7 @@ module Pronto
         :eslint_output
       )
 
-      def_delegators :eslint_output, :eslint_config, :patch
+      def_delegators :eslint_output, :eslint_config, :patch, :logger
 
       def initialize(offense, eslint_output)
         map_offense(offense)
@@ -29,12 +29,15 @@ module Pronto
       end
 
       def message
+        return log_fatal_error if fatal?
+
         Message.new(file_path, patch_line, level, message_text, nil, Pronto::Eslinter)
       end
 
       private
 
       def map_offense(offense)
+        @fatal = offense[:fatal]
         @rule_id = offense[:ruleId]
         @severity = offense[:severity]
         @offense_message = offense[:message]
@@ -75,6 +78,15 @@ module Pronto
         when 2 then :error
         else :info
         end
+      end
+
+      def fatal?
+        @fatal
+      end
+
+      def log_fatal_error
+        logger.log("ESLint Error: #{message_text}")
+        nil
       end
     end
   end

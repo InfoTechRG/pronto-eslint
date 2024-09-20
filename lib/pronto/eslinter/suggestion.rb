@@ -22,39 +22,21 @@ module Pronto
 
       private
 
-      # Suggestion config must be enabled
-      # Offense must have a fix
-      # The fix must be on the same line as the offense (no multi-line suggestions)
       def suggestable?
-        enabled? && !fix.nil? && line == end_line
-      end
-
-      def original_lines
-        (source || '').lines("\n")
-      end
-
-      def original_line
-        original_lines[line - 1]
-      end
-
-      def line_start_in_source
-        original_lines[0...line - 1].join.length
+        enabled? && !fix.nil?
       end
 
       def fixed_line
-        "#{left}#{fix[:text]}#{right}"
+        impacted_replace_lines = fix[:text].split("\n").length
+        "#{left}#{fix[:text]}#{right}".split("\n")[line - 1...line - 1 + impacted_replace_lines].join("\n")
       end
 
       def left
-        original_line[0...column - 1]
+        source.slice(0, fix[:range][0])
       end
 
       def right
-        if end_column < column
-          original_line[left.size...]
-        else
-          original_line[end_column - 1...]
-        end
+        source.slice(fix[:range][1]..)
       end
 
       def new_line_maybe
