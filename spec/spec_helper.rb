@@ -4,8 +4,6 @@ require 'pronto'
 require 'rspec/its'
 require 'pronto/eslinter'
 
-require 'byebug'
-
 Dir['./spec/support/**/*.rb'].each { |f| require f }
 
 RSpec.configure do |config|

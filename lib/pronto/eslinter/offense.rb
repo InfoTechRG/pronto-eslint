@@ -8,6 +8,7 @@ module Pronto
       extend Forwardable
 
       attr_reader(
+        :raw_offense,
         :rule_id,
         :severity,
         :offense_message,
@@ -17,7 +18,6 @@ module Pronto
         :message_id,
         :end_line,
         :end_column,
-        :fix,
         :eslint_output
       )
 
@@ -25,6 +25,7 @@ module Pronto
 
       def initialize(offense, eslint_output)
         map_offense(offense)
+        @raw_offense = offense
         @eslint_output = eslint_output
       end
 
@@ -47,11 +48,10 @@ module Pronto
         @message_id = offense[:messageId]
         @end_line = offense[:endLine]
         @end_column = offense[:endColumn]
-        @fix = offense[:fix]
       end
 
       def message_text
-        "#{offense_message}#{rule}#{suggestion_text}"
+        "#{offense_message}#{rule}#{suggestion[:text]}"
       end
 
       def rule
@@ -60,12 +60,12 @@ module Pronto
         " eslint([#{rule_id}](https://eslint.org/docs/latest/rules/#{rule_id}))"
       end
 
-      def suggestion_text
-        Suggestion.new(self).suggest
+      def suggestion
+        @suggestion ||= Suggestion.new(self).suggest
       end
 
       def patch_line
-        @patch_line ||= patch.added_lines.find { |l| l.new_lineno == line }
+        @patch_line ||= patch.added_lines.find { |l| l.new_lineno == suggestion[:line] || line }
       end
 
       def file_path

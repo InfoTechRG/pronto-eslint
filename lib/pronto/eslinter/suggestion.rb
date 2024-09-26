@@ -5,19 +5,23 @@ module Pronto
     class Suggestion
       extend Forwardable
 
-      attr_reader :offense
+      attr_reader :offense, :fix
 
-      def_delegators :offense, :eslint_config, :eslint_output, :line, :fix, :column, :end_line, :end_column
+      def_delegators :offense, :eslint_config, :eslint_output, :line, :column, :end_line, :end_column, :patch
       def_delegators :eslint_output, :source
 
       def initialize(offense)
         @offense = offense
+        @fix = offense.raw_offense[:fix]
       end
 
       def suggest
-        return unless enabled? && suggestable?
+        return {} unless suggestable?
 
-        "\n\n```suggestion\n#{fixed_line}#{new_line_maybe}```"
+        {
+          text: "\n\n```suggestion\n#{replaced_line}#{new_line_maybe}```",
+          line: line_number_after_fix
+        }
       end
 
       private
@@ -26,9 +30,24 @@ module Pronto
         enabled? && !fix.nil?
       end
 
-      def fixed_line
-        impacted_replace_lines = fix[:text].split("\n").length
-        "#{left}#{fix[:text]}#{right}".split("\n")[line - 1...line - 1 + impacted_replace_lines].join("\n")
+      def replaced_line
+        fixed_lines[line_number_after_fix - 1...line_number_after_fix - 1 + fix_line_count].join("\n")
+      end
+
+      def line_number_after_fix
+        if fixed_lines.size < source.split("\n").size
+          line - (end_line - line)
+        else
+          line
+        end
+      end
+
+      def fixed_lines
+        "#{left}#{fix[:text]}#{right}".split("\n")
+      end
+
+      def fix_line_count
+        fix[:text].split("\n").length
       end
 
       def left
@@ -40,7 +59,7 @@ module Pronto
       end
 
       def new_line_maybe
-        "\n" unless fixed_line.end_with?("\n")
+        "\n" unless replaced_line.end_with?("\n")
       end
 
       def enabled?
