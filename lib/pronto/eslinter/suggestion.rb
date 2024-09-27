@@ -27,7 +27,11 @@ module Pronto
       private
 
       def suggestable?
-        enabled? && !fix.nil?
+        enabled? && !fix.nil? && !multi_line_fix?
+      end
+
+      def multi_line_fix?
+        line != end_line
       end
 
       def replaced_line
