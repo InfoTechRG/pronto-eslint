@@ -36,7 +36,7 @@ module Pronto
 
       def line_number_after_fix
         if fixed_lines.size < source.split("\n").size
-          line - (end_line - line)
+          line - (source.split("\n").size - fixed_lines.size)
         else
           line
         end

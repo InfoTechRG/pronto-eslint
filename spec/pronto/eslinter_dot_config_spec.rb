@@ -54,7 +54,7 @@ module Pronto
             "'foo' is not defined. eslint([no-undef](#{eslint_doc_url}no-undef))",
             "Unexpected alert. eslint([no-alert](#{eslint_doc_url}no-alert))",
             'Opening curly brace does not appear on the same line as controlling statement. ' \
-            "eslint([brace-style](#{eslint_doc_url}brace-style))\n\n```suggestion\n\n```",
+            "eslint([brace-style](#{eslint_doc_url}brace-style))\n\n```suggestion\nfunction ReallYBAdFunC() {\n```",
             "Block must not be padded by blank lines. eslint([padded-blocks](#{eslint_doc_url}padded-blocks))" \
             "\n\n```suggestion\n\n```",
             'More than 1 blank line not allowed. eslint([no-multiple-empty-lines]' \
