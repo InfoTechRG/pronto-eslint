@@ -33,6 +33,7 @@ ESlint will look at your `eslint.config.js` file for configuration.
 ```yaml
 eslinter:
   # Enable suggestions in GitHub
+  # This feature is very beta and is not recommended for production use. It may not work as expected.
   suggestions: true # default: false
 
   # Change the command to run eslint

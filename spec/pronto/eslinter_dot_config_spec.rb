@@ -28,10 +28,9 @@ module Pronto
             'Opening curly brace does not appear on the same line as controlling statement. ' \
             "eslint([brace-style](#{eslint_doc_url}brace-style))",
             "Block must not be padded by blank lines. eslint([padded-blocks](#{eslint_doc_url}padded-blocks))",
-            'More than 1 blank line not allowed. eslint([no-multiple-empty-lines]' \
-            "(#{eslint_doc_url}no-multiple-empty-lines))",
-            "Unnecessary return statement. eslint([no-useless-return](#{eslint_doc_url}no-useless-return))",
-            "Missing semicolon. eslint([semi](#{eslint_doc_url}semi))"
+            'More than 1 blank line not allowed. ' \
+            "eslint([no-multiple-empty-lines](#{eslint_doc_url}no-multiple-empty-lines))",
+            "Unnecessary return statement. eslint([no-useless-return](#{eslint_doc_url}no-useless-return))"
           ]
         end
 
@@ -58,8 +57,7 @@ module Pronto
             'More than 1 blank line not allowed. eslint([no-multiple-empty-lines]' \
             "(#{eslint_doc_url}no-multiple-empty-lines))",
             "Unnecessary return statement. eslint([no-useless-return](#{eslint_doc_url}no-useless-return))" \
-            "\n\n```suggestion\n  \n}\nReallYBAdFunC()\n```",
-            "Missing semicolon. eslint([semi](#{eslint_doc_url}semi))"
+            "\n\n```suggestion\n  \n}\nReallYBAdFunC()\n```"
           ]
         end
 
