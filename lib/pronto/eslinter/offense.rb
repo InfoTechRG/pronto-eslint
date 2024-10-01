@@ -65,7 +65,7 @@ module Pronto
       end
 
       def patch_line
-        @patch_line ||= patch.added_lines.find { |l| l.new_lineno == suggestion[:line] || line }
+        @patch_line ||= patch.added_lines.find { |l| l.new_lineno == (suggestion[:line] || line) }
       end
 
       def file_path
