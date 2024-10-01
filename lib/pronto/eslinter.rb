@@ -11,10 +11,16 @@ module Pronto
     def run
       return [] unless @patches
 
+      log_suggestion_warning
+      process
+    end
+
+    def process
       @patches
         .select { |patch| patch.additions.positive? }
         .flat_map { |patch| process_patch(patch) }
         .compact
+        .select(&:line)
     end
 
     def process_patch(patch)
@@ -34,6 +40,14 @@ module Pronto
 
     def eslint_config
       @eslint_config ||= Pronto::ConfigFile.new.to_h['eslinter'] || {}
+    end
+
+    def logger
+      @logger ||= Pronto::Config.new.logger
+    end
+
+    def log_suggestion_warning
+      logger.log('Using suggestions is in beta and not recommended for production use.') if eslint_config[:suggestions]
     end
   end
 end

@@ -5,60 +5,65 @@ module Pronto
     class Suggestion
       extend Forwardable
 
-      attr_reader :offense
+      attr_reader :offense, :fix
 
-      def_delegators :offense, :eslint_config, :eslint_output, :line, :fix, :column, :end_line, :end_column
+      def_delegators :offense, :eslint_config, :eslint_output, :line, :column, :end_line, :end_column, :patch
       def_delegators :eslint_output, :source
 
       def initialize(offense)
         @offense = offense
+        @fix = offense.raw_offense[:fix]
       end
 
       def suggest
-        return unless enabled? && suggestable?
+        return {} unless suggestable?
 
-        "\n\n```suggestion\n#{fixed_line}#{new_line_maybe}```"
+        {
+          text: "\n\n```suggestion\n#{replaced_line}#{new_line_maybe}```",
+          line: line_number_after_fix
+        }
       end
 
       private
 
-      # Suggestion config must be enabled
-      # Offense must have a fix
-      # The fix must be on the same line as the offense (no multi-line suggestions)
       def suggestable?
-        enabled? && !fix.nil? && line == end_line
+        enabled? && !fix.nil? && !multi_line_fix?
       end
 
-      def original_lines
-        (source || '').lines("\n")
+      def multi_line_fix?
+        line != end_line
       end
 
-      def original_line
-        original_lines[line - 1]
+      def replaced_line
+        fixed_lines[line_number_after_fix - 1...line_number_after_fix - 1 + fix_line_count].join("\n")
       end
 
-      def line_start_in_source
-        original_lines[0...line - 1].join.length
-      end
-
-      def fixed_line
-        "#{left}#{fix[:text]}#{right}"
-      end
-
-      def left
-        original_line[0...column - 1]
-      end
-
-      def right
-        if end_column < column
-          original_line[left.size...]
+      def line_number_after_fix
+        if fixed_lines.size < source.split("\n").size
+          line - (source.split("\n").size - fixed_lines.size)
         else
-          original_line[end_column - 1...]
+          line
         end
       end
 
+      def fixed_lines
+        "#{left}#{fix[:text]}#{right}".split("\n")
+      end
+
+      def fix_line_count
+        fix[:text].split("\n").length
+      end
+
+      def left
+        source.slice(0, fix[:range][0])
+      end
+
+      def right
+        source.slice(fix[:range][1]..)
+      end
+
       def new_line_maybe
-        "\n" unless fixed_line.end_with?("\n")
+        "\n" unless replaced_line.end_with?("\n")
       end
 
       def enabled?

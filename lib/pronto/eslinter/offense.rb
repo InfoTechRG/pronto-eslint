@@ -8,6 +8,7 @@ module Pronto
       extend Forwardable
 
       attr_reader(
+        :raw_offense,
         :rule_id,
         :severity,
         :offense_message,
@@ -17,24 +18,27 @@ module Pronto
         :message_id,
         :end_line,
         :end_column,
-        :fix,
         :eslint_output
       )
 
-      def_delegators :eslint_output, :eslint_config, :patch
+      def_delegators :eslint_output, :eslint_config, :patch, :logger
 
       def initialize(offense, eslint_output)
         map_offense(offense)
+        @raw_offense = offense
         @eslint_output = eslint_output
       end
 
       def message
+        return log_fatal_error if fatal?
+
         Message.new(file_path, patch_line, level, message_text, nil, Pronto::Eslinter)
       end
 
       private
 
       def map_offense(offense)
+        @fatal = offense[:fatal]
         @rule_id = offense[:ruleId]
         @severity = offense[:severity]
         @offense_message = offense[:message]
@@ -44,11 +48,10 @@ module Pronto
         @message_id = offense[:messageId]
         @end_line = offense[:endLine]
         @end_column = offense[:endColumn]
-        @fix = offense[:fix]
       end
 
       def message_text
-        "#{offense_message}#{rule}#{suggestion_text}"
+        "#{offense_message}#{rule}#{suggestion[:text]}"
       end
 
       def rule
@@ -57,12 +60,12 @@ module Pronto
         " eslint([#{rule_id}](https://eslint.org/docs/latest/rules/#{rule_id}))"
       end
 
-      def suggestion_text
-        Suggestion.new(self).suggest
+      def suggestion
+        @suggestion ||= Suggestion.new(self).suggest
       end
 
       def patch_line
-        @patch_line ||= patch.added_lines.find { |l| l.new_lineno == line }
+        @patch_line ||= patch.added_lines.find { |l| l.new_lineno == (suggestion[:line] || line) }
       end
 
       def file_path
@@ -75,6 +78,15 @@ module Pronto
         when 2 then :error
         else :info
         end
+      end
+
+      def fatal?
+        @fatal
+      end
+
+      def log_fatal_error
+        logger.log("ESLint Error: #{message_text}")
+        nil
       end
     end
   end
