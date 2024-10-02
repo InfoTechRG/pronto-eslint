@@ -20,7 +20,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.requirements << 'eslint (in PATH)'
 
-  spec.add_dependency('faraday-retry', '>= 2.0', '< 3.0')
   spec.add_dependency('pronto', '>= 0.10', '< 0.12')
   spec.add_dependency('rugged', '>= 0.24', '< 2.0')
 end
